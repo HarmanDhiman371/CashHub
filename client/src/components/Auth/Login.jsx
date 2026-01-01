@@ -41,13 +41,20 @@ const Login = () => {
       
       if (response.success) {
         setSuccessMessage('Login successful! Redirecting...');
-        // Store token or user data
-        localStorage.setItem('authToken', response.token || 'dummy-token');
-        localStorage.setItem('userId', response.user?.id || '');
         
-        // Redirect to dashboard/home
+        // ⬇️ UPDATE THESE LINES - Store user data properly for ConnectionPage
+        localStorage.setItem('authToken', response.token || 'dummy-token');
+        
+        // Store complete user object that ConnectionPage needs
+        localStorage.setItem('authUser', JSON.stringify({
+          id: response.user?.id || '1',
+          username: response.user?.username || 'User',
+          email: formData.email
+        }));
+        
+        // ⬇️ CHANGE REDIRECT FROM '/dashboard' TO '/connections'
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = '/connections';
         }, 1500);
       } else {
         setErrorMessage(response.message || 'Invalid credentials');

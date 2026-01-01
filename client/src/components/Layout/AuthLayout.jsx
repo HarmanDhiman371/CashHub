@@ -1,103 +1,94 @@
 import React, { useEffect, useRef } from 'react';
 
 const AuthLayout = ({ children, title, subtitle }) => {
-  const canvasRef = useRef(null);
+  const gridRef = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const grid = gridRef.current;
+    if (!grid) return;
 
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const particles = [];
-    const particleCount = 50;
-
-    // Create particles
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 2 + 0.5,
-        speedX: Math.random() * 0.5 - 0.25,
-        speedY: Math.random() * 0.5 - 0.25,
-        color: `rgba(99, 102, 241, ${Math.random() * 0.3 + 0.1})`
-      });
-    }
-
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const createFloatingDot = () => {
+      const dot = document.createElement('div');
+      dot.style.cssText = `
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: var(--primary-red);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        animation: floatDot 4s linear forwards;
+      `;
       
-      particles.forEach(particle => {
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-
-        // Wrap around edges
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.y > canvas.height) particle.y = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-
-        // Draw particle
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = particle.color;
-        ctx.fill();
-
-        // Draw connections
-        particles.forEach(otherParticle => {
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 100) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(99, 102, 241, ${0.1 * (1 - distance / 100)})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.stroke();
-          }
-        });
-      });
-
-      requestAnimationFrame(animate);
-    }
-
-    animate();
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Random position
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      
+      dot.style.left = `${x}%`;
+      dot.style.top = `${y}%`;
+      
+      // Random animation delay
+      dot.style.animationDelay = `${Math.random() * 2}s`;
+      
+      grid.appendChild(dot);
+      
+      // Remove after animation
+      setTimeout(() => {
+        if (dot.parentNode) {
+          dot.parentNode.removeChild(dot);
+        }
+      }, 4000);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    // Create initial dots
+    for (let i = 0; i < 20; i++) {
+      createFloatingDot();
+    }
+
+    // Create dots at intervals
+    const interval = setInterval(createFloatingDot, 300);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Add CSS for floating dots
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes floatDot {
+        0% {
+          opacity: 0;
+          transform: translateY(0) scale(1);
+        }
+        10% {
+          opacity: 1;
+          transform: translateY(-10px) scale(1.5);
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-100px) scale(0.5);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
   }, []);
 
   return (
     <div className="auth-container">
-      {/* Particles Background */}
-      <canvas 
-        ref={canvasRef} 
-        className="particles-container"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 0
-        }}
-      />
+      {/* Matrix Grid Background */}
+      <div className="matrix-grid" ref={gridRef}></div>
       
-      {/* Gradient Orbs */}
-      <div className="orb-container">
-        <div className="orb orb-1"></div>
-        <div className="orb orb-2"></div>
-        <div className="orb orb-3"></div>
-      </div>
+      {/* Red Glow Effects */}
+      <div className="glow-effect glow-1"></div>
+      <div className="glow-effect glow-2"></div>
+      <div className="glow-effect glow-3"></div>
       
       <div className="auth-card-wrapper">
         <div className="auth-header">
