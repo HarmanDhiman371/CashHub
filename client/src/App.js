@@ -3,10 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Auth/Login';
 import Signup from './components/Auth/Signup';
 import ConnectionPage from './components/Platform/ConnectionPage';
+import SchedulePage from './components/Schedule/SchedulePage'; // ← NEW IMPORT
 import './styles/Auth.css';
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem('authToken');
+  const isAuthenticated = !!localStorage.getItem('auth_token') || !!localStorage.getItem('authToken');
 
   return (
     <Router>
@@ -18,6 +19,13 @@ function App() {
           path="/connections" 
           element={
             isAuthenticated ? <ConnectionPage /> : <Navigate to="/login" />
+          } 
+        />
+        {/* NEW SCHEDULE ROUTE */}
+        <Route 
+          path="/schedule" 
+          element={
+            isAuthenticated ? <SchedulePage /> : <Navigate to="/login" />
           } 
         />
       </Routes>
