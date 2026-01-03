@@ -27,38 +27,62 @@ const SchedulePage = () => {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
-    const userData = localStorage.getItem('auth_user') || localStorage.getItem('authUser');
-    
-    if (!token || !userData) {
-      window.location.href = '/login';
-      return;
-    }
+  // Check authentication
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+  const userData = localStorage.getItem('auth_user') || localStorage.getItem('authUser');
+  
+  if (!token || !userData) {
+    window.location.href = '/login';
+    return;
+  }
 
-    try {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
+  try {
+    const parsedUser = JSON.parse(userData);
+    setUser(parsedUser);
+    
+    // ⬇️ CHECK FOR INSTAGRAM SUCCESS PARAMETER
+    const urlParams = new URLSearchParams(window.location.search);
+    const igStatus = urlParams.get('ig');
+    
+    if (igStatus === 'success') {
+      // Instagram OAuth completed successfully
+      setMessages(prev => ({ 
+        ...prev, 
+        success: '✅ Instagram connected successfully!',
+        error: ''
+      }));
       
-      // Check for OAuth callback (code in URL)
-      const urlParams = new URLSearchParams(window.location.search);
-      const oauthCode = urlParams.get('code');
-      const oauthState = urlParams.get('state');
+      // Fetch Instagram info automatically
+      fetchInstagramInfo(parsedUser);
       
-      if (oauthCode) {
-        // We have an OAuth callback - handle it
-        handleOAuthCallback(oauthCode, oauthState, parsedUser);
-        // Remove code from URL without reloading
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else {
-        // Normal load - fetch Instagram info if available
-        fetchInstagramInfo(parsedUser);
-      }
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      window.location.href = '/login';
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setMessages(prev => ({ ...prev, success: '' }));
+      }, 5000);
+      
+      // Remove parameter from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } 
+    else if (igStatus === 'error') {
+      // Instagram OAuth failed
+      setMessages(prev => ({ 
+        ...prev, 
+        error: '❌ Instagram connection failed. Please try again.',
+        success: ''
+      }));
+      
+      // Remove parameter from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+    else {
+      // Normal load - fetch Instagram info if available
+      fetchInstagramInfo(parsedUser);
+    }
+  } catch (error) {
+    console.error('Error parsing user data:', error);
+    window.location.href = '/login';
+  }
+}, []);
 
   // Handle OAuth Callback
   const handleOAuthCallback = async (code, state, userData) => {
