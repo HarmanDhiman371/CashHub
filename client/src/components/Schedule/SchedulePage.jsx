@@ -146,40 +146,41 @@ const SchedulePage = () => {
   };
 
   const fetchInstagramInfo = async (userData) => {
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
-    if (!token || !userData?.id) return;
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+  console.log('DEBUG - Token for Instagram info:', token);
+  if (!token || !userData?.id) return;
 
-    setIsLoading(prev => ({ ...prev, info: true }));
-    setMessages(prev => ({ ...prev, info: 'Loading Instagram info...' }));
+  setIsLoading(prev => ({ ...prev, info: true }));
+  setMessages(prev => ({ ...prev, info: 'Loading Instagram info...' }));
 
-    try {
-      // Real API call - matches your HTML format
-      const response = await fetch(
-        `https://auth.clashhub.online/api/instagram/getuser?user_id=${encodeURIComponent(userData.id)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setInstagramInfo(data);
-        setMessages(prev => ({ ...prev, info: '' }));
-      } else {
-        throw new Error(`Request failed: ${response.status}`);
+  try {
+    // ✅ FIX: Use relative path like HTML version
+    const response = await fetch(
+      `/api/instagram/getuser?user_id=${encodeURIComponent(userData.id)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       }
-    } catch (error) {
-      setMessages(prev => ({ 
-        ...prev, 
-        info: '⚠️ Could not load Instagram info' 
-      }));
-    } finally {
-      setIsLoading(prev => ({ ...prev, info: false }));
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      setInstagramInfo(data);
+      setMessages(prev => ({ ...prev, info: '' }));
+    } else {
+      throw new Error(`Request failed: ${response.status}`);
     }
-  };
+  } catch (error) {
+    setMessages(prev => ({ 
+      ...prev, 
+      info: '⚠️ Could not load Instagram info' 
+    }));
+  } finally {
+    setIsLoading(prev => ({ ...prev, info: false }));
+  }
+};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -222,132 +223,138 @@ const SchedulePage = () => {
   };
 
   const handleGenerateCaption = async () => {
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
-    if (!token) return;
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+  console.log('DEBUG - Token for AI caption:', token);
+  console.log('DEBUG - Token length:', token?.length);
+  console.log('DEBUG - Full localStorage:', localStorage);
+  
+  if (!token) return;
 
-    setIsLoading(prev => ({ ...prev, caption: true }));
-    setMessages(prev => ({ ...prev, error: '', success: '' }));
+  setIsLoading(prev => ({ ...prev, caption: true }));
+  setMessages(prev => ({ ...prev, error: '', success: '' }));
 
-    try {
-      // Real API call - matches your HTML format
-      const response = await fetch('https://auth.clashhub.online/api/ai/generate-caption', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          context: formData.captionContext,
-          postType: formData.postType || 'image',
-        }),
-      });
+  try {
+    // ✅ FIX: Use relative path like HTML version
+    const response = await fetch('/api/ai/generate-caption', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        context: formData.captionContext,
+        postType: formData.postType || 'image',
+      }),
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        setFormData(prev => ({ 
-          ...prev, 
-          caption: data.caption || '' 
-        }));
-        setMessages(prev => ({ 
-          ...prev, 
-          success: '✨ Caption generated successfully!' 
-        }));
-      } else {
-        throw new Error('Failed to generate caption');
-      }
-    } catch (error) {
+    if (response.ok) {
+      const data = await response.json();
+      setFormData(prev => ({ 
+        ...prev, 
+        caption: data.caption || '' 
+      }));
       setMessages(prev => ({ 
         ...prev, 
-        error: 'Failed to generate caption. Please try again.' 
+        success: '✨ Caption generated successfully!' 
       }));
-    } finally {
-      setIsLoading(prev => ({ ...prev, caption: false }));
+    } else {
+      throw new Error('Failed to generate caption');
     }
-  };
+  } catch (error) {
+    setMessages(prev => ({ 
+      ...prev, 
+      error: 'Failed to generate caption. Please try again.' 
+    }));
+  } finally {
+    setIsLoading(prev => ({ ...prev, caption: false }));
+  }
+};
 
   const handleSchedulePost = async () => {
-    // Validation
-    if (!formData.postType) {
-      setMessages(prev => ({ ...prev, error: 'Please select post type' }));
-      return;
+  // Validation
+  if (!formData.postType) {
+    setMessages(prev => ({ ...prev, error: 'Please select post type' }));
+    return;
+  }
+
+  if (!formData.mediaFile) {
+    setMessages(prev => ({ ...prev, error: 'Please upload a media file' }));
+    return;
+  }
+
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+  console.log('DEBUG - Token for schedule post:', token);
+  console.log('DEBUG - User ID:', user?.id);
+  if (!token || !user?.id) return;
+
+  setIsLoading(prev => ({ ...prev, schedule: true }));
+  setMessages(prev => ({ ...prev, error: '', success: '' }));
+
+  try {
+    // Create FormData - matches your HTML format EXACTLY
+    const formDataToSend = new FormData();
+    formDataToSend.append('user_id', user.id);
+    formDataToSend.append('post_type', formData.postType);
+    formDataToSend.append('media', formData.mediaFile);
+    if (formData.caption) formDataToSend.append('caption', formData.caption);
+    if (formData.scheduledAt) {
+      formDataToSend.append(
+        'scheduled_at',
+        new Date(formData.scheduledAt).toISOString()
+      );
     }
 
-    if (!formData.mediaFile) {
-      setMessages(prev => ({ ...prev, error: 'Please upload a media file' }));
-      return;
-    }
+    // ✅ FIX: Use relative path like HTML version
+    const response = await fetch('/api/instagram/schedule', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formDataToSend,
+    });
 
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
-    if (!token || !user?.id) return;
-
-    setIsLoading(prev => ({ ...prev, schedule: true }));
-    setMessages(prev => ({ ...prev, error: '', success: '' }));
-
-    try {
-      // Create FormData - matches your HTML format EXACTLY
-      const formDataToSend = new FormData();
-      formDataToSend.append('user_id', user.id);
-      formDataToSend.append('post_type', formData.postType);
-      formDataToSend.append('media', formData.mediaFile);
-      if (formData.caption) formDataToSend.append('caption', formData.caption);
-      if (formData.scheduledAt) {
-        formDataToSend.append(
-          'scheduled_at',
-          new Date(formData.scheduledAt).toISOString()
-        );
-      }
-
-      // Real API call - matches your HTML format
-      const response = await fetch('https://auth.clashhub.online/api/instagram/schedule', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formDataToSend,
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Success - reset form and show success message
+      setFormData({
+        postType: '',
+        caption: '',
+        captionContext: '',
+        scheduledAt: '',
+        mediaFile: null
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Success - reset form and show success message
-        setFormData({
-          postType: '',
-          caption: '',
-          captionContext: '',
-          scheduledAt: '',
-          mediaFile: null
-        });
-        setMediaPreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        
-        const scheduleMsg = formData.scheduledAt 
-          ? `✅ Post scheduled for ${new Date(formData.scheduledAt).toLocaleString()}`
-          : '✅ Post scheduled for immediate publishing';
-        
-        setMessages(prev => ({ 
-          ...prev, 
-          success: scheduleMsg,
-          error: ''
-        }));
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Upload failed: ${response.status}`);
-      }
-    } catch (error) {
+      setMediaPreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      
+      const scheduleMsg = formData.scheduledAt 
+        ? `✅ Post scheduled for ${new Date(formData.scheduledAt).toLocaleString()}`
+        : '✅ Post scheduled for immediate publishing';
+      
       setMessages(prev => ({ 
         ...prev, 
-        error: error.message || 'Failed to schedule post',
-        success: ''
+        success: scheduleMsg,
+        error: ''
       }));
-    } finally {
-      setIsLoading(prev => ({ ...prev, schedule: false }));
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        setMessages(prev => ({ ...prev, success: '' }));
-      }, 5000);
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Upload failed: ${response.status}`);
     }
-  };
+  } catch (error) {
+    setMessages(prev => ({ 
+      ...prev, 
+      error: error.message || 'Failed to schedule post',
+      success: ''
+    }));
+  } finally {
+    setIsLoading(prev => ({ ...prev, schedule: false }));
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      setMessages(prev => ({ ...prev, success: '' }));
+    }, 5000);
+  }
+};
 
   const handleRemoveMedia = () => {
     setFormData(prev => ({ ...prev, mediaFile: null }));
