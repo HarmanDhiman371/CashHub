@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './ModerationPage.css';
 import MediaSelector from './MediaSelector';
 import RuleCreator from './RuleCreator';
 import RulesDashboard from './RulesDashboard';
-
-// import { getInstagramMedia, getModeratedComments } from './ModerationAPI';
+import './ModerationPage.css';
 
 const ModerationPage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('media'); // 'media', 'create', 'dashboard'
+  const [activeTab, setActiveTab] = useState('media');
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check authentication
     const token = localStorage.getItem('auth_token');
     const userData = localStorage.getItem('auth_user');
     
@@ -51,30 +48,24 @@ const ModerationPage = () => {
   if (isLoading) {
     return (
       <div className="moderation-loading">
-        <div className="loading-spinner"></div>
+        <div className="moderation-spinner"></div>
         <p>Loading moderation dashboard...</p>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (
-    <div className="moderation-container">
-      {/* Animated Background */}
-      <div className="moderation-bg"></div>
+    <div className="moderation-page">
+      <div className="moderation-background"></div>
       
-      {/* Main Card */}
-      <div className="moderation-card">
+      <div className="moderation-container">
         {/* Header */}
         <div className="moderation-header">
-          <button className="back-btn" onClick={handleBackToSchedule}>
+          <button className="moderation-back-btn" onClick={handleBackToSchedule}>
             ← Back to Schedule
           </button>
           <div className="moderation-logo">⚙️</div>
-          <h1 className="moderation-title">Comment Moderation</h1>
+          <h1 className="moderation-main-title">Comment Moderation</h1>
           <p className="moderation-subtitle">
             Automatically moderate comments on your Instagram posts
           </p>
@@ -82,43 +73,43 @@ const ModerationPage = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="error-message">
+          <div className="moderation-error">
             <span className="error-icon">⚠️</span>
-            <span className="error-text">{error}</span>
-            <button className="error-close" onClick={() => setError('')}>
+            <span className="error-message-text">{error}</span>
+            <button className="error-close-btn" onClick={() => setError('')}>
               ✕
             </button>
           </div>
         )}
 
         {/* Tabs Navigation */}
-        <div className="tabs-navigation">
+        <div className="moderation-tabs">
           <button
-            className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`}
+            className={`moderation-tab ${activeTab === 'media' ? 'active' : ''}`}
             onClick={() => setActiveTab('media')}
           >
             <span className="tab-icon">📸</span>
-            <span className="tab-text">Select Media</span>
+            <span className="tab-label">Select Media</span>
           </button>
           <button
-            className={`tab-btn ${activeTab === 'create' ? 'active' : ''} ${!selectedMedia ? 'disabled' : ''}`}
+            className={`moderation-tab ${activeTab === 'create' ? 'active' : ''} ${!selectedMedia ? 'disabled' : ''}`}
             onClick={() => selectedMedia && setActiveTab('create')}
             disabled={!selectedMedia}
           >
             <span className="tab-icon">✏️</span>
-            <span className="tab-text">Create Rule</span>
+            <span className="tab-label">Create Rule</span>
           </button>
           <button
-            className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            className={`moderation-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
             <span className="tab-icon">📊</span>
-            <span className="tab-text">Dashboard & Logs</span>
+            <span className="tab-label">Dashboard</span>
           </button>
         </div>
 
         {/* Tab Content */}
-        <div className="tab-content">
+        <div className="moderation-content">
           {activeTab === 'media' && (
             <MediaSelector 
               onMediaSelect={handleMediaSelect}
@@ -136,19 +127,14 @@ const ModerationPage = () => {
           )}
           
           {activeTab === 'dashboard' && (
-            <RulesDashboard 
-              onError={setError}
-            />
+            <RulesDashboard onError={setError} />
           )}
         </div>
 
         {/* Footer */}
         <div className="moderation-footer">
-          <p className="footer-note">
+          <p className="footer-text">
             Rules will automatically moderate new comments on selected posts
-          </p>
-          <p className="footer-copyright">
-            © {new Date().getFullYear()} ClashHub Moderation. All rights reserved.
           </p>
         </div>
       </div>

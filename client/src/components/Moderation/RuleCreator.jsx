@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createModerationRule } from './ModerationAPI';
-import './ModerationComponents.css';
+import './RulesCreator.css';
+
 const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
-  const [keywords, setKeywords] = useState(['spam', 'hate']);
+  const [keywords, setKeywords] = useState(['spam', 'hate', 'badword']);
   const [newKeyword, setNewKeyword] = useState('');
   const [action, setAction] = useState('hide');
   const [ruleName, setRuleName] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Auto-generate rule name based on media caption
-  React.useEffect(() => {
+  useEffect(() => {
     if (!ruleName && media.caption) {
       const shortCaption = media.caption.length > 30 
         ? media.caption.substring(0, 30) + '...' 
@@ -20,8 +20,9 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
   }, [media.caption, ruleName]);
 
   const handleAddKeyword = () => {
-    if (newKeyword.trim() && !keywords.includes(newKeyword.trim().toLowerCase())) {
-      setKeywords([...keywords, newKeyword.trim().toLowerCase()]);
+    const trimmedKeyword = newKeyword.trim().toLowerCase();
+    if (trimmedKeyword && !keywords.includes(trimmedKeyword)) {
+      setKeywords([...keywords, trimmedKeyword]);
       setNewKeyword('');
     }
   };
@@ -56,12 +57,12 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
         action: action,
         is_active: isActive,
         keywords: keywords,
-        rule_name: ruleName // Optional, backend might use this
+        rule_name: ruleName.trim()
       };
 
       await createModerationRule(ruleData);
       
-      onError(''); // Clear any previous errors
+      onError('');
       onRuleCreated();
       
     } catch (error) {
@@ -72,50 +73,67 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
     }
   };
 
+  const getActionDetails = (actionType) => {
+    switch (actionType) {
+      case 'hide':
+        return { icon: '👁️', title: 'Hide', description: 'Comment hidden from public view' };
+      case 'delete':
+        return { icon: '🗑️', title: 'Delete', description: 'Comment permanently removed' };
+      case 'block':
+        return { icon: '🚫', title: 'Block User', description: 'Block user + hide comment' };
+      default:
+        return { icon: '⚙️', title: 'Custom', description: 'Custom action' };
+    }
+  };
+
+  const actionDetails = getActionDetails(action);
+
   return (
     <div className="rule-creator">
       {/* Header */}
-      <div className="rule-header">
-        <button className="back-btn" onClick={onBack}>
+      <div className="rule-creator-header">
+        <button className="rule-back-btn" onClick={onBack}>
           ← Back to Media
         </button>
-        <h2 className="rule-title">Create Moderation Rule</h2>
-        <p className="rule-subtitle">
+        <h2 className="rule-creator-title">Create Moderation Rule</h2>
+        <p className="rule-creator-subtitle">
           Set up auto-moderation for comments on this post
         </p>
       </div>
 
       {/* Selected Media Preview */}
-      <div className="selected-media-preview">
-        <div className="media-preview-header">
-          <h3>Selected Post:</h3>
-          <span className="media-id">ID: {media.id}</span>
+      <div className="selected-media-section">
+        <div className="media-section-header">
+          <h3>Selected Post</h3>
+          <span className="media-id-label">ID: {media.id}</span>
         </div>
         
-        <div className="media-preview-content">
+        <div className="media-preview">
           {media.media_url && !media.media_url.includes('.mp4') ? (
             <img 
               src={media.media_url} 
               alt="Selected post"
-              className="preview-image"
+              className="media-preview-image"
             />
           ) : (
-            <div className="media-placeholder">
-              <span className="placeholder-icon">📸</span>
+            <div className="media-preview-placeholder">
+              <span className="placeholder-icon">
+                {media.type === 'VIDEO' ? '🎬' : '📸'}
+              </span>
               <p>Media Preview</p>
             </div>
           )}
           
-          <div className="media-details">
-            <p className="media-caption">
+          <div className="media-preview-details">
+            <p className="media-preview-caption">
               {media.caption || 'No caption available'}
             </p>
-            <div className="media-stats">
-              <span className="stat">
+            <div className="media-preview-stats">
+              <span className="media-stat">
                 <span className="stat-icon">❤️</span>
                 <span className="stat-value">{media.like_count || 0} likes</span>
               </span>
-              <span className="stat">
+              <span className="media-stat">
                 <span className="stat-icon">💬</span>
                 <span className="stat-value">{media.comments_count || 0} comments</span>
               </span>
@@ -125,41 +143,41 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
       </div>
 
       {/* Rule Form */}
-      <div className="rule-form">
+      <div className="rule-form-section">
         {/* Rule Name */}
-        <div className="form-group">
-          <label className="form-label">
-            Rule Name <span className="required">*</span>
+        <div className="form-field">
+          <label className="field-label">
+            Rule Name <span className="required-star">*</span>
           </label>
           <input
             type="text"
             value={ruleName}
             onChange={(e) => setRuleName(e.target.value)}
             placeholder="e.g., Moderate vacation post comments"
-            className="rule-name-input"
+            className="rule-name-field"
           />
-          <p className="form-hint">
+          <p className="field-hint">
             Give your rule a descriptive name for easy identification
           </p>
         </div>
 
         {/* Keywords */}
-        <div className="form-group">
-          <label className="form-label">
-            Keywords to Moderate <span className="required">*</span>
+        <div className="form-field">
+          <label className="field-label">
+            Keywords to Moderate <span className="required-star">*</span>
           </label>
-          <div className="keywords-input-container">
+          <div className="keyword-input-group">
             <input
               type="text"
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Enter a keyword and press Enter"
-              className="keyword-input"
+              className="keyword-input-field"
             />
             <button
               type="button"
-              className="add-keyword-btn"
+              className="add-keyword-button"
               onClick={handleAddKeyword}
               disabled={!newKeyword.trim()}
             >
@@ -168,11 +186,11 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
           </div>
           
           {/* Keywords List */}
-          <div className="keywords-list">
+          <div className="keywords-container">
             {keywords.length === 0 ? (
-              <div className="no-keywords">
-                <span className="no-keywords-icon">⚠️</span>
-                <span className="no-keywords-text">No keywords added yet</span>
+              <div className="empty-keywords">
+                <span className="empty-icon">⚠️</span>
+                <span className="empty-text">No keywords added yet</span>
               </div>
             ) : (
               keywords.map((keyword, index) => (
@@ -180,8 +198,9 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
                   <span className="keyword-text">{keyword}</span>
                   <button
                     type="button"
-                    className="remove-keyword"
+                    className="remove-keyword-btn"
                     onClick={() => handleRemoveKeyword(keyword)}
+                    aria-label={`Remove ${keyword}`}
                   >
                     ✕
                   </button>
@@ -190,64 +209,50 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
             )}
           </div>
           
-          <p className="form-hint">
+          <p className="field-hint">
             Add keywords that should trigger moderation. Comments containing these words will be auto-moderated.
           </p>
         </div>
 
         {/* Action Selection */}
-        <div className="form-group">
-          <label className="form-label">
-            Action When Keyword Matches <span className="required">*</span>
+        <div className="form-field">
+          <label className="field-label">
+            Action When Keyword Matches <span className="required-star">*</span>
           </label>
-          <div className="action-buttons">
-            <button
-              type="button"
-              className={`action-btn ${action === 'hide' ? 'active' : ''}`}
-              onClick={() => setAction('hide')}
-            >
-              <span className="action-icon">👁️</span>
-              <span className="action-title">Hide</span>
-              <span className="action-desc">Comment hidden from public view</span>
-            </button>
-            
-            <button
-              type="button"
-              className={`action-btn ${action === 'delete' ? 'active' : ''}`}
-              onClick={() => setAction('delete')}
-            >
-              <span className="action-icon">🗑️</span>
-              <span className="action-title">Delete</span>
-              <span className="action-desc">Comment permanently removed</span>
-            </button>
-            
-            <button
-              type="button"
-              className={`action-btn ${action === 'block' ? 'active' : ''}`}
-              onClick={() => setAction('block')}
-            >
-              <span className="action-icon">🚫</span>
-              <span className="action-title">Block User</span>
-              <span className="action-desc">Block user + hide comment</span>
-            </button>
+          <div className="action-selection">
+            {['hide', 'delete', 'block'].map((actionType) => {
+              const details = getActionDetails(actionType);
+              return (
+                <button
+                  key={actionType}
+                  type="button"
+                  className={`action-option ${action === actionType ? 'selected' : ''}`}
+                  onClick={() => setAction(actionType)}
+                >
+                  <span className="action-option-icon">{details.icon}</span>
+                  <span className="action-option-title">{details.title}</span>
+                  <span className="action-option-desc">{details.description}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Active Toggle */}
-        <div className="form-group">
-          <label className="toggle-label">
+        <div className="form-field">
+          <label className="toggle-switch">
             <input
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
-              className="toggle-input"
+              className="toggle-checkbox"
             />
             <span className="toggle-slider"></span>
-            <span className="toggle-text">
+            <span className="toggle-label">
               {isActive ? 'Rule is active' : 'Rule is inactive'}
             </span>
           </label>
-          <p className="form-hint">
+          <p className="field-hint">
             Inactive rules won't moderate comments until enabled
           </p>
         </div>
@@ -255,7 +260,7 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
         {/* Submit Button */}
         <div className="form-actions">
           <button
-            className="cancel-btn"
+            className="cancel-action-btn"
             onClick={onBack}
             disabled={isSubmitting}
           >
@@ -263,13 +268,13 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
           </button>
           
           <button
-            className="submit-btn"
+            className="submit-rule-btn"
             onClick={handleSubmit}
             disabled={isSubmitting || keywords.length === 0 || !ruleName.trim()}
           >
             {isSubmitting ? (
               <>
-                <span className="btn-spinner"></span>
+                <span className="submit-spinner"></span>
                 Creating Rule...
               </>
             ) : (
@@ -280,27 +285,25 @@ const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
       </div>
 
       {/* Rule Preview */}
-      <div className="rule-preview">
-        <h3>Rule Preview:</h3>
-        <div className="preview-card">
-          <p>
+      <div className="rule-preview-section">
+        <h3 className="preview-title">Rule Preview</h3>
+        <div className="rule-preview-card">
+          <p className="preview-text">
             <strong>When</strong> a comment on post "
             {media.caption ? (media.caption.length > 50 ? media.caption.substring(0, 50) + '...' : media.caption) : 'selected post'}"
             contains any of these keywords:
           </p>
           
-          <div className="preview-keywords">
+          <div className="preview-keywords-list">
             {keywords.map((keyword, index) => (
               <span key={index} className="preview-keyword">{keyword}</span>
             ))}
           </div>
           
-          <p>
+          <p className="preview-text">
             <strong>Then</strong> the comment will be{' '}
-            <span className="action-highlight">
-              {action === 'hide' ? 'hidden from public view' : 
-               action === 'delete' ? 'permanently deleted' : 
-               'deleted and user will be blocked'}
+            <span className="highlighted-action">
+              {actionDetails.description.toLowerCase()}
             </span>
           </p>
           

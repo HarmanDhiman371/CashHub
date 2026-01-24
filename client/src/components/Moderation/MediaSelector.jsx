@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getInstagramMedia, syncInstagramMedia } from './ModerationAPI';
-import './ModerationComponents.css';
+import './MediaSelector.css';
+
 const MediaSelector = ({ onMediaSelect, onError }) => {
   const [media, setMedia] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -10,13 +11,13 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
 
   useEffect(() => {
     fetchMedia();
-  }, [fetchMedia]);
+  }, []);
 
   const fetchMedia = async () => {
     try {
       setIsLoading(true);
       const mediaData = await getInstagramMedia();
-      setMedia(mediaData);
+      setMedia(Array.isArray(mediaData) ? mediaData : []);
       onError('');
     } catch (error) {
       console.error('Error fetching media:', error);
@@ -31,7 +32,7 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
     try {
       setIsSyncing(true);
       await syncInstagramMedia();
-      await fetchMedia(); // Refresh media list after sync
+      await fetchMedia();
       onError('');
     } catch (error) {
       console.error('Error syncing media:', error);
@@ -54,7 +55,6 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
 
   const filteredMedia = media.filter(mediaItem => {
     if (!searchTerm) return true;
-    
     const searchLower = searchTerm.toLowerCase();
     return (
       (mediaItem.caption && mediaItem.caption.toLowerCase().includes(searchLower)) ||
@@ -62,9 +62,25 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
     );
   });
 
+  const getMediaTypeIcon = (mediaItem) => {
+    if (mediaItem.type === 'VIDEO' || (mediaItem.media_url && mediaItem.media_url.includes('.mp4'))) {
+      return '🎬';
+    } else if (mediaItem.type === 'CAROUSEL_ALBUM') {
+      return '🖼️';
+    } else {
+      return '📸';
+    }
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return 'N/A';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   if (isLoading) {
     return (
-      <div className="media-selector loading">
+      <div className="media-selector-loading">
         <div className="loading-spinner"></div>
         <p>Loading your Instagram media...</p>
       </div>
@@ -74,16 +90,16 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
   return (
     <div className="media-selector">
       {/* Header */}
-      <div className="media-header">
-        <h2 className="media-title">Select Instagram Post</h2>
-        <p className="media-subtitle">
+      <div className="media-selector-header">
+        <h2 className="media-selector-title">Select Instagram Post</h2>
+        <p className="media-selector-subtitle">
           Choose a post to set up comment moderation rules
         </p>
       </div>
 
       {/* Search and Actions */}
-      <div className="media-actions">
-        <div className="search-box">
+      <div className="media-selector-controls">
+        <div className="search-container">
           <input
             type="text"
             placeholder="Search posts by caption..."
@@ -95,7 +111,7 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
         </div>
         
         <button
-          className="sync-btn"
+          className="sync-media-btn"
           onClick={handleSyncMedia}
           disabled={isSyncing}
         >
@@ -111,17 +127,18 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
       </div>
 
       {/* Media Count */}
-      <div className="media-count">
-        <span className="count-number">{filteredMedia.length}</span>
-        <span className="count-text">posts found</span>
+      <div className="media-stats">
+        <span className="media-count">
+          {filteredMedia.length} {filteredMedia.length === 1 ? 'post' : 'posts'} found
+        </span>
         {searchTerm && (
-          <span className="search-hint">for "{searchTerm}"</span>
+          <span className="search-filter">for "{searchTerm}"</span>
         )}
       </div>
 
       {/* Media Grid */}
       {filteredMedia.length === 0 ? (
-        <div className="no-media">
+        <div className="no-media-found">
           <div className="no-media-icon">📸</div>
           <h3>No posts found</h3>
           <p>
@@ -131,7 +148,7 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
             }
           </p>
           {!searchTerm && (
-            <button className="sync-btn" onClick={handleSyncMedia}>
+            <button className="sync-media-btn large" onClick={handleSyncMedia}>
               🔄 Sync Instagram Media
             </button>
           )}
@@ -145,32 +162,36 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
                 className={`media-card ${selectedMediaId === mediaItem.id ? 'selected' : ''}`}
                 onClick={() => handleMediaClick(mediaItem)}
               >
+                <div className="media-card-header">
+                  <span className="media-type-icon">{getMediaTypeIcon(mediaItem)}</span>
+                  <span className="media-date">{formatDate(mediaItem.timestamp)}</span>
+                </div>
+                
                 <div className="media-thumbnail">
-                  {mediaItem.media_url ? (
-                    mediaItem.media_url.includes('.mp4') || mediaItem.type === 'VIDEO' ? (
-                      <div className="video-thumbnail">
-                        <span className="video-icon">🎬</span>
-                        <p>Video</p>
-                      </div>
-                    ) : (
-                      <img 
-                        src={mediaItem.media_url} 
-                        alt={mediaItem.caption || 'Instagram post'}
-                        className="media-image"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.parentElement.innerHTML = '<div class="image-error">📸</div>';
-                        }}
-                      />
-                    )
+                  {mediaItem.media_url && !mediaItem.media_url.includes('.mp4') ? (
+                    <img 
+                      src={mediaItem.media_url} 
+                      alt={mediaItem.caption || 'Instagram post'}
+                      className="media-image"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = '<div class="media-fallback">📸</div>';
+                      }}
+                    />
                   ) : (
-                    <div className="no-thumbnail">
-                      <span className="placeholder-icon">📸</span>
+                    <div className="media-fallback">
+                      {getMediaTypeIcon(mediaItem)}
+                    </div>
+                  )}
+                  
+                  {selectedMediaId === mediaItem.id && (
+                    <div className="selected-overlay">
+                      <span className="checkmark">✓</span>
                     </div>
                   )}
                 </div>
                 
-                <div className="media-info">
+                <div className="media-card-content">
                   <p className="media-caption">
                     {mediaItem.caption 
                       ? (mediaItem.caption.length > 100 
@@ -180,31 +201,16 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
                     }
                   </p>
                   
-                  <div className="media-stats">
-                    <span className="stat-item">
-                      <span className="stat-icon">❤️</span>
-                      <span className="stat-value">{mediaItem.like_count || 0}</span>
+                  <div className="media-engagement">
+                    <span className="engagement-item">
+                      <span className="engagement-icon">❤️</span>
+                      <span className="engagement-count">{mediaItem.like_count || 0}</span>
                     </span>
-                    <span className="stat-item">
-                      <span className="stat-icon">💬</span>
-                      <span className="stat-value">{mediaItem.comments_count || 0}</span>
-                    </span>
-                    <span className="stat-item">
-                      <span className="stat-icon">📅</span>
-                      <span className="stat-value">
-                        {mediaItem.timestamp 
-                          ? new Date(mediaItem.timestamp).toLocaleDateString()
-                          : 'N/A'
-                        }
-                      </span>
+                    <span className="engagement-item">
+                      <span className="engagement-icon">💬</span>
+                      <span className="engagement-count">{mediaItem.comments_count || 0}</span>
                     </span>
                   </div>
-                </div>
-                
-                <div className="media-selector-check">
-                  {selectedMediaId === mediaItem.id && (
-                    <span className="check-icon">✓</span>
-                  )}
                 </div>
               </div>
             ))}
@@ -212,19 +218,19 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
 
           {/* Selection Actions */}
           <div className="selection-actions">
-            <div className="selection-info">
+            <div className="selection-status">
               {selectedMediaId ? (
                 <>
-                  <span className="selected-icon">✓</span>
-                  <span className="selected-text">Post selected</span>
+                  <span className="status-icon selected">✓</span>
+                  <span className="status-text">Post selected</span>
                 </>
               ) : (
-                <span className="select-hint">Click on a post to select it</span>
+                <span className="status-text">Click on a post to select it</span>
               )}
             </div>
             
             <button
-              className="continue-btn"
+              className="continue-button"
               onClick={handleContinue}
               disabled={!selectedMediaId}
             >
