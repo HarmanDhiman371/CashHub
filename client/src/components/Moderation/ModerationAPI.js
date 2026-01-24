@@ -26,7 +26,7 @@ export const createModerationRule = async (ruleData) => {
   if (!token) throw new Error('No authentication token found');
 
   try {
-    const response = await fetch(`${API_BASE}/comments/moderation`, {
+    const response = await fetch(`${API_BASE}/instagram/comments/moderation`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
