@@ -4,7 +4,8 @@ import './ModerationPage.css';
 import MediaSelector from './MediaSelector';
 import RuleCreator from './RuleCreator';
 import RulesDashboard from './RulesDashboard';
-import { getInstagramMedia, getModeratedComments } from './ModerationAPI';
+
+// import { getInstagramMedia, getModeratedComments } from './ModerationAPI';
 
 const ModerationPage = () => {
   const navigate = useNavigate();

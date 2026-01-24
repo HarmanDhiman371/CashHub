@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getInstagramMedia, syncInstagramMedia } from './ModerationAPI';
-
+import './ModerationComponents.css';
 const MediaSelector = ({ onMediaSelect, onError }) => {
   const [media, setMedia] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

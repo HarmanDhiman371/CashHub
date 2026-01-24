@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getModeratedComments } from './ModerationAPI';
-
+import './ModerationComponents.css';
 const RulesDashboard = ({ onError }) => {
   const [moderatedComments, setModeratedComments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

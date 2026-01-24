@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createModerationRule } from './ModerationAPI';
-
+import './ModerationComponents.css';
 const RuleCreator = ({ media, onRuleCreated, onError, onBack }) => {
   const [keywords, setKeywords] = useState(['spam', 'hate']);
   const [newKeyword, setNewKeyword] = useState('');
