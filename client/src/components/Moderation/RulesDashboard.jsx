@@ -9,7 +9,7 @@ const RulesDashboard = ({ onError }) => {
 
   useEffect(() => {
     fetchModeratedComments();
-  }, []);
+  }, [fetchModeratedComments]);
 
   const fetchModeratedComments = async () => {
     try {

@@ -10,7 +10,7 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
 
   useEffect(() => {
     fetchMedia();
-  }, []);
+  }, [fetchMedia]);
 
   const fetchMedia = async () => {
     try {
