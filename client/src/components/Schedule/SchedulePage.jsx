@@ -305,7 +305,7 @@ const SchedulePage = () => {
     }
 
     // ✅ FIX: Use relative path like HTML version
-    const response = await fetch('/api/instagram/schedule', {
+    const response = await fetch('https://auth.clashhub.online/api/instagram/schedule', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
