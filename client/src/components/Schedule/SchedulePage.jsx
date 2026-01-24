@@ -156,7 +156,7 @@ const SchedulePage = () => {
   try {
     // ✅ FIX: Use relative path like HTML version
     const response = await fetch(
-      `/api/instagram/getuser?user_id=${encodeURIComponent(userData.id)}`,
+      `https://auth.clashhub.online/api/instagram/getuser?user_id=${encodeURIComponent(userData.id)}`,
       {
         method: 'GET',
         headers: {
@@ -235,7 +235,7 @@ const SchedulePage = () => {
 
   try {
     // ✅ FIX: Use relative path like HTML version
-    const response = await fetch('/api/ai/generate-caption', {
+    const response = await fetch('https://auth.clashhub.online/api/ai/generate-caption', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
