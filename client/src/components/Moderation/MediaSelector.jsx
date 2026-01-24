@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getInstagramMedia, syncInstagramMedia } from './ModerationAPI';
 import './MediaSelector.css';
 
@@ -9,11 +9,8 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
   const [selectedMediaId, setSelectedMediaId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchMedia();
-  }, []);
-
-  const fetchMedia = async () => {
+  // Wrap fetchMedia in useCallback to prevent infinite re-renders
+  const fetchMedia = useCallback(async () => {
     try {
       setIsLoading(true);
       const mediaData = await getInstagramMedia();
@@ -26,7 +23,11 @@ const MediaSelector = ({ onMediaSelect, onError }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onError]);
+
+  useEffect(() => {
+    fetchMedia();
+  }, [fetchMedia]); // Add fetchMedia to dependencies
 
   const handleSyncMedia = async () => {
     try {

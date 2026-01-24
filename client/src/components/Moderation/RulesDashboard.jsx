@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getModeratedComments } from './ModerationAPI';
 import './RulesDashboard.css';
 
@@ -8,11 +8,8 @@ const RulesDashboard = ({ onError }) => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchModeratedComments();
-  }, []);
-
-  const fetchModeratedComments = async () => {
+  // Wrap fetchModeratedComments in useCallback
+  const fetchModeratedComments = useCallback(async () => {
     try {
       setIsLoading(true);
       const comments = await getModeratedComments(100);
@@ -25,7 +22,11 @@ const RulesDashboard = ({ onError }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onError]);
+
+  useEffect(() => {
+    fetchModeratedComments();
+  }, [fetchModeratedComments]); // Add fetchModeratedComments to dependencies
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Just now';
@@ -74,6 +75,9 @@ const RulesDashboard = ({ onError }) => {
           break;
         case 'month':
           cutoff.setMonth(now.getMonth() - 1);
+          break;
+        default:
+          // No additional filtering needed for 'all'
           break;
       }
 

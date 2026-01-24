@@ -9,7 +9,6 @@ const ModerationPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('media');
   const [selectedMedia, setSelectedMedia] = useState(null);
-  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -23,7 +22,8 @@ const ModerationPage = () => {
     }
 
     try {
-      setUser(JSON.parse(userData));
+      // User data is parsed but not stored in state since we don't use it
+      JSON.parse(userData);
       setIsLoading(false);
     } catch (error) {
       console.error('Error parsing user data:', error);
