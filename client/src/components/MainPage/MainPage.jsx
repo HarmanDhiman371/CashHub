@@ -292,10 +292,10 @@ const MainPage = () => {
         <footer className="dashboard-footer">
           <div className="footer-content">
             <div className="footer-links">
-              <a href="#" className="footer-link">Help Center</a>
+              {/* <a href="#" className="footer-link">Help Center</a>
               <a href="#" className="footer-link">Documentation</a>
               <a href="#" className="footer-link">Contact Support</a>
-              <a href="#" className="footer-link">Privacy Policy</a>
+              <a href="#" className="footer-link">Privacy Policy</a> */}
             </div>
             <div className="footer-copyright">
               © {new Date().getFullYear()} ClashHub Platform. All rights reserved.
