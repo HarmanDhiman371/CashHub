@@ -85,65 +85,65 @@ const SchedulePage = () => {
 }, []);
 
   // Handle OAuth Callback
-  const handleOAuthCallback = async (code, state, userData) => {
-    setIsLoading(prev => ({ ...prev, oauth: true }));
-    setMessages(prev => ({ 
-      ...prev, 
-      info: 'Connecting Instagram account...',
-      error: '',
-      success: ''
-    }));
+  // const handleOAuthCallback = async (code, state, userData) => {
+  //   setIsLoading(prev => ({ ...prev, oauth: true }));
+  //   setMessages(prev => ({ 
+  //     ...prev, 
+  //     info: 'Connecting Instagram account...',
+  //     error: '',
+  //     success: ''
+  //   }));
 
-    try {
-      const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+  //   try {
+  //     const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
       
-      // Send code to backend for token exchange
-      const response = await fetch('https://auth.clashhub.online/api/instagram/exchange-token', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code,
-          state,
-          user_id: userData.id
-        }),
-      });
+  //     // Send code to backend for token exchange
+  //     const response = await fetch('https://auth.clashhub.online/api/instagram/exchange-token', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Authorization': `Bearer ${token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         code,
+  //         state,
+  //         user_id: userData.id
+  //       }),
+  //     });
 
-      if (response.ok) {
-        const data = await response.json();
+  //     if (response.ok) {
+  //       const data = await response.json();
         
-        if (data.success) {
-          setMessages(prev => ({ 
-            ...prev, 
-            success: '✅ Instagram connected successfully!',
-            info: ''
-          }));
+  //       if (data.success) {
+  //         setMessages(prev => ({ 
+  //           ...prev, 
+  //           success: '✅ Instagram connected successfully!',
+  //           info: ''
+  //         }));
           
-          // Fetch updated Instagram info
-          fetchInstagramInfo(userData);
+  //         // Fetch updated Instagram info
+  //         fetchInstagramInfo(userData);
           
-          // Clear success message after 5 seconds
-          setTimeout(() => {
-            setMessages(prev => ({ ...prev, success: '' }));
-          }, 5000);
-        } else {
-          throw new Error(data.message || 'Instagram connection failed');
-        }
-      } else {
-        throw new Error('Failed to exchange OAuth code');
-      }
-    } catch (error) {
-      setMessages(prev => ({ 
-        ...prev, 
-        error: `Failed to connect Instagram: ${error.message}`,
-        info: ''
-      }));
-    } finally {
-      setIsLoading(prev => ({ ...prev, oauth: false }));
-    }
-  };
+  //         // Clear success message after 5 seconds
+  //         setTimeout(() => {
+  //           setMessages(prev => ({ ...prev, success: '' }));
+  //         }, 5000);
+  //       } else {
+  //         throw new Error(data.message || 'Instagram connection failed');
+  //       }
+  //     } else {
+  //       throw new Error('Failed to exchange OAuth code');
+  //     }
+  //   } catch (error) {
+  //     setMessages(prev => ({ 
+  //       ...prev, 
+  //       error: `Failed to connect Instagram: ${error.message}`,
+  //       info: ''
+  //     }));
+  //   } finally {
+  //     setIsLoading(prev => ({ ...prev, oauth: false }));
+  //   }
+  // };
 
   const fetchInstagramInfo = async (userData) => {
   const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
@@ -314,7 +314,7 @@ const SchedulePage = () => {
     });
 
     if (response.ok) {
-      const data = await response.json();
+      // const data = await response.json();
       
       // Success - reset form and show success message
       setFormData({
