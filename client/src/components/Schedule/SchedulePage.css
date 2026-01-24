@@ -818,3 +818,78 @@
     align-self: flex-start;
   }
 }
+
+/* Comment Moderation Section */
+.moderation-section {
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.moderation-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.moderation-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.moderation-content {
+  flex: 1;
+}
+
+.moderation-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.moderation-description {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.moderation-btn {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+.moderation-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+}
+
+.moderation-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .moderation-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .moderation-btn {
+    width: 100%;
+  }
+}

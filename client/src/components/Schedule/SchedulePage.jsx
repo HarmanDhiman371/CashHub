@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './SchedulePage.css';
-
+import { useNavigate } from 'react-router-dom';
 const SchedulePage = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [instagramInfo, setInstagramInfo] = useState(null);
   const [isLoading, setIsLoading] = useState({
@@ -452,7 +453,24 @@ const SchedulePage = () => {
             </div>
           )}
         </div>
-
+         <div className="moderation-section">
+          <div className="moderation-card">
+            <div className="moderation-icon">⚙️</div>
+            <div className="moderation-content">
+              <h3 className="moderation-title">Comment Moderation</h3>
+              <p className="moderation-description">
+                Set up auto-moderation rules to automatically hide or delete comments 
+                containing specific keywords on your Instagram posts.
+              </p>
+            </div>
+            <button 
+              className="moderation-btn"
+              onClick={() => navigate('/moderation')}
+            >
+              Manage Comment Moderation
+            </button>
+          </div>
+        </div>
         {/* Messages */}
         {messages.error && (
           <div className="message error-message">

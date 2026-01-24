@@ -40,10 +40,10 @@ import Login from './components/Auth/Login';
 import Signup from './components/Auth/Signup';
 import ConnectionPage from './components/Platform/ConnectionPage';
 import SchedulePage from './components/Schedule/SchedulePage';
+import ModerationPage from './components/Moderation/ModerationPage'; // ← NEW IMPORT
 import './styles/Auth.css';
 
 function App() {
-  // ✅ FIX: Check exactly like HTML version
   const isAuthenticated = !!localStorage.getItem('auth_token') && !!localStorage.getItem('auth_user');
 
   return (
@@ -62,6 +62,13 @@ function App() {
           path="/schedule" 
           element={
             isAuthenticated ? <SchedulePage /> : <Navigate to="/login" />
+          } 
+        />
+        {/* NEW MODERATION ROUTE */}
+        <Route 
+          path="/moderation" 
+          element={
+            isAuthenticated ? <ModerationPage /> : <Navigate to="/login" />
           } 
         />
       </Routes>
